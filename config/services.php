@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'proxy' => env('PROXY_ADDR'),
+
+    'rt' => [
+        'bb_session' => env('RT_BB_SESSION')
+    ]
+
 ];
