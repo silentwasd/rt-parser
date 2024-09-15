@@ -38,6 +38,8 @@ class SearchPageRepo extends Repository
             $leeches    = $row->find(new Filter(class: 'row4 leechmed bold'))->text;
             $downloads  = $row->find(new Filter(class: 'row4 small number-format'))->text;
             $created_at = $row->find(new Filter(class: 'row4 small nowrap'))->attributes['data-ts_text'];
+            $category   = $row->find(new Filter(class: 'row1 f-name-col'))
+                              ->find(new Filter(name: 'a'))->text;
 
             $topic             = new SearchTopic();
             $topic->id         = (int)$row->attributes['data-topic_id'];
@@ -48,6 +50,7 @@ class SearchPageRepo extends Repository
             $topic->leeches    = (int)$leeches;
             $topic->downloads  = (int)$downloads;
             $topic->created_at = (int)$created_at;
+            $topic->category   = $category ? html_entity_decode($category) : null;
 
             $result[] = $topic;
         }

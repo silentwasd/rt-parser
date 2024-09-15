@@ -12,4 +12,5 @@ class SearchTopic
     public ?int $leeches;
     public ?int $downloads;
     public ?int $created_at;
+    public ?string $category;
 }
