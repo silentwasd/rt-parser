@@ -80,4 +80,180 @@ class Element
     {
         return new ClassList($this->attributes['class'] ?? '');
     }
+
+    public function toArray(): array
+    {
+        return collect($this->children)
+            ->map(function (Element $element) {
+                if ($element->name == 'span') {
+                    if ($element->classes()->has('post-br')) {
+                        return [
+                            'type'     => 'block',
+                            'text'     => '',
+                            'children' => $element->toArray()
+                        ];
+                    }
+
+                    if ($element->classes()->has('post-b')) {
+                        return [
+                            'type'     => 'strong',
+                            'text'     => '',
+                            'children' => $element->toArray()
+                        ];
+                    }
+
+                    if (
+                        isset($element->attributes['style']) &&
+                        $element->attributes['style'] == 'font-size: 24px; line-height: normal;'
+                    ) {
+                        return [
+                            'type'     => 'headline',
+                            'text'     => '',
+                            'children' => $element->toArray()
+                        ];
+                    }
+
+                    if ($element->classes()->has('post-align')) {
+                        return [
+                            'type'     => 'block',
+                            'text'     => '',
+                            'align'    => isset($element->attributes['style']) && $element->attributes['style'] == 'text-align: center;'
+                                ? 'center'
+                                : 'left',
+                            'children' => $element->toArray()
+                        ];
+                    }
+
+                    return [
+                        'type'     => 'span',
+                        'text'     => '',
+                        'children' => $element->toArray()
+                    ];
+                }
+
+                if ($element->name == 'br') {
+                    return [
+                        'type'     => 'break',
+                        'text'     => '',
+                        'children' => []
+                    ];
+                }
+
+                if ($element->name == 'a') {
+                    return [
+                        'type'     => 'anchor',
+                        'text'     => $element->attributes['href'],
+                        'children' => $element->toArray()
+                    ];
+                }
+
+                if ($element->name == 'div') {
+                    if ($element->classes()->has('sp-wrap')) {
+                        return [
+                            'type'     => 'spoiler',
+                            'text'     => html_entity_decode(
+                                $element->find(new Filter(class: 'sp-head folded'))
+                                        ->find(new Filter(name: 'span'))->deepText()
+                            ),
+                            'children' => $element->find(new Filter(class: 'sp-body'))
+                                                  ->toArray()
+                        ];
+                    }
+
+                    return [
+                        'type'     => 'block',
+                        'text'     => '',
+                        'children' => $element->toArray()
+                    ];
+                }
+
+                if ($element->name == 'var') {
+                    return [
+                        'type'      => 'image',
+                        'text'      => $element->attributes['title'],
+                        'aligned'   => $element->classes()->has('postImgAligned'),
+                        'direction' => $element->classes()->has('img-left')
+                            ? 'left'
+                            : ($element->classes()->has('img-right') ? 'right' : 'none'),
+                        'children'  => []
+                    ];
+                }
+
+                if ($element->name == 'hr') {
+                    return [
+                        'type'     => 'horizontal',
+                        'text'     => '',
+                        'children' => []
+                    ];
+                }
+
+                if (
+                    $element->name == 'ul' ||
+                    $element->classes()->has('post-ul')
+                ) {
+                    return [
+                        'type'     => 'list',
+                        'variant'  => 'unordered',
+                        'text'     => '',
+                        'children' => $element->toArray()
+                    ];
+                }
+
+                if ($element->name == 'ol') {
+                    return [
+                        'type'     => 'list',
+                        'variant'  => 'ordered',
+                        'text'     => '',
+                        'children' => $element->toArray()
+                    ];
+                }
+
+                if ($element->name == 'li') {
+                    return [
+                        'type'     => 'list-element',
+                        'text'     => '',
+                        'children' => $element->toArray()
+                    ];
+                }
+
+                return [
+                    'type'     => 'text',
+                    'text'     => html_entity_decode($element->text),
+                    'children' => []
+                ];
+            })
+            ->all();
+    }
+
+    public function __toString(): string
+    {
+        return collect($this->children)
+            ->map(function (Element $element) {
+                if ($element->name == 'span') {
+                    if ($element->classes()->has('post-br'))
+                        return "<div class='py-1.5'></div>";
+
+                    if ($element->classes()->has('post-b'))
+                        return "<strong class='font-semibold'>$element</strong>";
+
+                    return "<span>$element</span>";
+                }
+
+                if ($element->name == 'br')
+                    return '<br/>';
+
+                if ($element->name == 'a')
+                    return sprintf("<a href='%s' class='text-primary-600 font-semibold'>%s</a>", $element->attributes['href'], $element);
+
+                if ($element->name == 'div') {
+                    if ($element->classes()->has('sp-wrap'))
+                        return "<div></div>";
+
+                    return "<div>$element</div>";
+                }
+
+                return $element->text;
+            })
+            ->join("\n");
+    }
 }
