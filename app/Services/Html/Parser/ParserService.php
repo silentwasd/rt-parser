@@ -60,6 +60,9 @@ class ParserService
         ],
         "input"   => [
             "single" => true
+        ],
+        "hr"      => [
+            "single" => true
         ]
     ];
 
@@ -158,6 +161,13 @@ class ParserService
                     Str::startsWith($tagBuffer, $definition["closing_tag"]["start"]) &&
                     Str::endsWith($tagBuffer, $definition["closing_tag"]["end"])
                 ) {
+                    if ($text) {
+                        $textElement       = new Element($nextId++);
+                        $textElement->name = "text";
+                        $textElement->text = $text;
+                        $parent[]          = $textElement;
+                    }
+
                     $openedTag->text .= $text;
                     $tagStarted      = false;
                     $tagBuffer       = "";
@@ -229,6 +239,21 @@ class ParserService
 
                     if (!$definitionKey && preg_match('/^<([-_!A-Za-z0-9]+)/', $tagBuffer, $matches)) {
                         $name = $matches[1];
+                    }
+
+                    if (
+                        $text &&
+                        isset($opened[count($opened) - 1]) &&
+                        ($openedTag = $tagIndex[$opened[count($opened) - 1]])
+                    ) {
+                        $openedTag->text .= $text;
+                    }
+
+                    if ($text) {
+                        $textElement       = new Element($nextId++);
+                        $textElement->name = "text";
+                        $textElement->text = $text;
+                        $parent[]          = $textElement;
                     }
 
                     $tag             = new Element($nextId++);

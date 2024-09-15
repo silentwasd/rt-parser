@@ -3,10 +3,8 @@
 namespace App\Services\Rt;
 
 use App\Services\Http\ProxyService;
-use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
-use Illuminate\Http\Client\Response;
 
 class HttpClient
 {

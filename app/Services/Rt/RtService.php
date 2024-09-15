@@ -3,11 +3,13 @@
 namespace App\Services\Rt;
 
 use App\Services\Rt\Objects\SearchTopic;
+use App\Services\Rt\Objects\Topic;
 use App\Services\Rt\Repo\SearchPageRepo;
 use App\Services\Rt\Enums\SearchCategory;
 use App\Services\Rt\Enums\SearchDirection;
 use App\Services\Rt\Enums\SearchOrder;
 use App\Services\Rt\Enums\SearchPeriod;
+use App\Services\Rt\Repo\TopicPageRepo;
 use Illuminate\Http\Client\ConnectionException;
 
 class RtService
@@ -47,5 +49,14 @@ class RtService
         ]);
 
         return SearchPageRepo::topics($body);
+    }
+
+    public function topic(int $id): Topic
+    {
+        $body = $this->http()->getBody('forum/viewtopic.php', [
+            't' => $id
+        ]);
+
+        return TopicPageRepo::topic($body);
     }
 }

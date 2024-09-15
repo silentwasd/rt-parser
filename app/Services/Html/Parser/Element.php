@@ -41,23 +41,43 @@ class Element
     /**
      * @param Filter $filter
      * @param bool $recursive
+     * @param Filter[] $exclude
      * @return Element[]
      */
-    public function findAll(Filter $filter, bool $recursive = true): array
+    public function findAll(Filter $filter, bool $recursive = true, array $exclude = []): array
     {
         $found = [];
 
         foreach ($this->children as $child) {
-            if ($filter->equals($child))
+            if (
+                $filter->equals($child) &&
+                collect($exclude)->filter(fn(Filter $filter) => $filter->equals($child))->count() == 0
+            ) {
                 $found[] = $child;
-        }
+            }
 
-        if ($recursive) {
-            foreach ($this->children as $child) {
-                $found = [...$found, ...$child->findAll($filter)];
+            if ($recursive) {
+                if (collect($exclude)->filter(fn(Filter $filter) => $filter->equals($child))->count() > 0)
+                    continue;
+
+                $found = [...$found, ...$child->findAll($filter, exclude: $exclude)];
             }
         }
 
         return $found;
+    }
+
+    public function deepText(): string
+    {
+        return $this->children
+            ? collect(
+                $this->findAll(new Filter(name: 'text'))
+            )->map(fn(Element $element) => trim($element->text))->join("\n")
+            : $this->text;
+    }
+
+    public function classes(): ClassList
+    {
+        return new ClassList($this->attributes['class'] ?? '');
     }
 }
