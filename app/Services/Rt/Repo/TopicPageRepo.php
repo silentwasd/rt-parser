@@ -60,10 +60,7 @@ class TopicPageRepo extends Repository
         }
 
         foreach ($root->children as $child) {
-            if (
-                ($child->attributes['class'] ?? '') == 'post-br' ||
-                ($child->name == 'hr' && $child->classes()->has('post-hr'))
-            ) {
+            if ($child->classes()->mustBe(['post-br', 'post-hr'])) {
                 $parent[] = $element;
 
                 $block = static::makeBlock();
@@ -137,6 +134,58 @@ class TopicPageRepo extends Repository
                 $parent[] = static::makeElement([
                     'type'     => 'anchor',
                     'href'     => $child->attributes['href'],
+                    'children' => self::makeElements($child)
+                ]);
+
+                $element = static::makeElement();
+
+                continue;
+            }
+
+            if (
+                $child->name == 'b' ||
+                $child->name == 'strong' ||
+                $child->classes()->has('post-b')
+            ) {
+                if ($element['type'] == 'paragraph') {
+                    $element['children'][] = static::makeElement([
+                        'type'     => 'strong',
+                        'children' => self::makeElements($child, insideParagraph: true)
+                    ]);
+
+                    continue;
+                }
+
+                $parent[] = $element;
+
+                $parent[] = static::makeElement([
+                    'type'     => 'strong',
+                    'children' => self::makeElements($child)
+                ]);
+
+                $element = static::makeElement();
+
+                continue;
+            }
+
+            if (
+                $child->name == 'i' ||
+                $child->name == 'em' ||
+                $child->classes()->has('post-i')
+            ) {
+                if ($element['type'] == 'paragraph') {
+                    $element['children'][] = static::makeElement([
+                        'type'     => 'em',
+                        'children' => self::makeElements($child, insideParagraph: true)
+                    ]);
+
+                    continue;
+                }
+
+                $parent[] = $element;
+
+                $parent[] = static::makeElement([
+                    'type'     => 'em',
                     'children' => self::makeElements($child)
                 ]);
 
