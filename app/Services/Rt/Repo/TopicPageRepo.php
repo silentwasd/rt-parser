@@ -21,6 +21,7 @@ class TopicPageRepo extends Repository
                   ->findAll(new Filter(name: 'text'), exclude: [new Filter(class: 'sp-wrap')])
         )->map(fn(Element $element) => trim($element->text))->join("\n");*/
 
+        $topic->title       = $document->find(new Filter(class: 'topic-title'))->text;
         $topic->description = $table->find(new Filter(class: 'post_body'))->toArray();
 
         return $topic;
