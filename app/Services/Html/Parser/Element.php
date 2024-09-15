@@ -102,6 +102,14 @@ class Element
                         ];
                     }
 
+                    if ($element->classes()->has('post-i')) {
+                        return [
+                            'type'     => 'em',
+                            'text'     => '',
+                            'children' => $element->toArray()
+                        ];
+                    }
+
                     if (
                         isset($element->attributes['style']) &&
                         $element->attributes['style'] == 'font-size: 24px; line-height: normal;'
