@@ -23,6 +23,11 @@ class TopicPageRepo extends Repository
 
         $topic->title       = $document->find(new Filter(class: 'topic-title'))->text;
         $topic->description = $table->find(new Filter(class: 'post_body'))->toArray();
+        $topic->comments    = collect($table->findAll(new Filter(class: 'post_body')))
+            ->skip(1)
+            ->map(fn(Element $element) => $element->toArray())
+            ->values()
+            ->all();
 
         return $topic;
     }

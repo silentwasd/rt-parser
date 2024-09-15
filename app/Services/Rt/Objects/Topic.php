@@ -6,4 +6,5 @@ class Topic
 {
     public string $title;
     public array $description = [];
+    public array $comments = [];
 }
