@@ -204,6 +204,16 @@ class Element
                         ];
                     }
 
+                    if ($element->classes()->has('q-wrap')) {
+                        return [
+                            'type'     => 'quote',
+                            'text'     => html_entity_decode(
+                                $element->find(new Filter(class: 'q-head'))->find(new Filter(name: 'b'))->text
+                            ),
+                            'children' => $element->find(new Filter(class: 'q'))->toArray()
+                        ];
+                    }
+
                     return [
                         'type'     => 'block',
                         'variant'  => '',
@@ -212,6 +222,10 @@ class Element
                         'text'     => '',
                         'children' => $element->toArray()
                     ];
+                }
+
+                if ($element->name == 'u' && $element->classes()->has('q-post')) {
+                    return null;
                 }
 
                 if ($element->name == 'pre') {
@@ -286,6 +300,7 @@ class Element
                     'children' => []
                 ];
             })
+            ->filter(fn(?array $element) => $element !== null)
             ->all();
     }
 
