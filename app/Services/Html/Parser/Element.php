@@ -168,8 +168,64 @@ class Element
                         ];
                     }
 
+                    if ($element->classes()->has('post-box')) {
+                        return [
+                            'type'     => 'block',
+                            'variant'  => 'inline',
+                            'rounded'  => true,
+                            'bordered' => !(isset($element->attributes['style']) && $element->attributes['style'] == 'border-color: transparent;'),
+                            'margined' => true,
+                            'padded'   => true,
+                            'text'     => '',
+                            'children' => $element->toArray()
+                        ];
+                    }
+
+                    if ($element->classes()->has('post-box-default')) {
+                        return [
+                            'type'     => 'block',
+                            'variant'  => 'inline',
+                            'rounded'  => false,
+                            'bordered' => false,
+                            'align'    => 'top',
+                            'text'     => '',
+                            'children' => $element->toArray()
+                        ];
+                    }
+
+                    if ($element->classes()->has('post-box-center')) {
+                        return [
+                            'type'     => 'block',
+                            'variant'  => 'table',
+                            'rounded'  => false,
+                            'bordered' => false,
+                            'text'     => '',
+                            'children' => $element->toArray()
+                        ];
+                    }
+
                     return [
                         'type'     => 'block',
+                        'variant'  => '',
+                        'rounded'  => false,
+                        'bordered' => false,
+                        'text'     => '',
+                        'children' => $element->toArray()
+                    ];
+                }
+
+                if ($element->name == 'pre') {
+                    if ($element->classes()->has('post-nfo')) {
+                        return [
+                            'type'     => 'pre',
+                            'variant'  => 'nfo',
+                            'text'     => '',
+                            'children' => $element->toArray()
+                        ];
+                    }
+
+                    return [
+                        'type'     => 'pre',
                         'text'     => '',
                         'children' => $element->toArray()
                     ];

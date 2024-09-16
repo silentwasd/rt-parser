@@ -5,6 +5,7 @@ namespace App\Services\Rt\Repo;
 use App\Services\Html\Parser\Element;
 use App\Services\Html\Parser\Filter;
 use App\Services\Rt\Objects\Topic;
+use Illuminate\Support\Str;
 
 class TopicPageRepo extends Repository
 {
@@ -16,16 +17,22 @@ class TopicPageRepo extends Repository
 
         $topic = new Topic();
 
-        /*$topic->description = collect(
-            $table->find(new Filter(class: 'post_body'))
-                  ->findAll(new Filter(name: 'text'), exclude: [new Filter(class: 'sp-wrap')])
-        )->map(fn(Element $element) => trim($element->text))->join("\n");*/
-
         $topic->title       = $document->find(new Filter(class: 'topic-title'))->text;
         $topic->description = $table->find(new Filter(class: 'post_body'))->toArray();
-        $topic->comments    = collect($table->findAll(new Filter(class: 'post_body')))
+        $topic->comments    = collect($table->findAll(new Filter(name: 'tbody')))
+            ->filter(fn(Element $element) => $element->find(new Filter(class: 'message td2')) != null)
             ->skip(1)
-            ->map(fn(Element $element) => $element->toArray())
+            ->map(fn(Element $element) => [
+                'nickname' => html_entity_decode(
+                    Str::replace("\n", '', $element->find(new Filter(classes: ['nick']))?->find(new Filter(name: 'a'))?->deepText() ?? '')
+                ),
+
+                'avatar'   => $element->find(new Filter(classes: ['poster_info']))
+                                      ->find(new Filter(class: 'avatar'))
+                                      ?->find(new Filter(name: 'img'))?->attributes['src'] ?? null,
+
+                'content'  => $element->find(new Filter(class: 'post_body'))->toArray()
+            ])
             ->values()
             ->all();
 
