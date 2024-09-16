@@ -11,6 +11,7 @@ use App\Services\Rt\Enums\SearchOrder;
 use App\Services\Rt\Enums\SearchPeriod;
 use App\Services\Rt\Repo\TopicPageRepo;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\Cache;
 
 class RtService
 {
@@ -53,9 +54,10 @@ class RtService
 
     public function topic(int $id): Topic
     {
-        $body = $this->http()->getBody('forum/viewtopic.php', [
-            't' => $id
-        ]);
+        $body = Cache::remember(
+            "topic.$id", 3600,
+            fn() => $this->http()->getBody('forum/viewtopic.php', ['t' => $id])
+        );
 
         return TopicPageRepo::topic($body);
     }
