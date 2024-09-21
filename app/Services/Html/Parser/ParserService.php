@@ -63,6 +63,9 @@ class ParserService
         ],
         "hr"      => [
             "single" => true
+        ],
+        "wbr"     => [
+            "single" => true
         ]
     ];
 

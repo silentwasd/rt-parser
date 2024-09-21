@@ -17,7 +17,7 @@ class TopicPageRepo extends Repository
 
         $topic = new Topic();
 
-        $topic->title       = $document->find(new Filter(class: 'topic-title'))->text;
+        $topic->title       = $document->find(new Filter(class: 'topic-title'))->niceText();
         $topic->magnet      = $document->find(new Filter(class: 'med magnet-link'))->attributes['href'];
         $topic->description = $table->find(new Filter(class: 'post_body'))->toArray();
         $topic->size        = $document->find(new Filter(class: 'tor-size-humn'))->attributes['title'];

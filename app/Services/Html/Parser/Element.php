@@ -76,6 +76,29 @@ class Element
             : $this->text;
     }
 
+    public function niceText(): string
+    {
+        if (count($this->children) == 0)
+            return $this->text;
+
+        $text = "";
+        $wbr  = false;
+
+        foreach ($this->children as $index => $child) {
+            if ($child->name == 'wbr') {
+                $wbr = true;
+                continue;
+            }
+
+            if ($child->name == 'text') {
+                $text .= ($wbr ? '' : ($index > 0 ? "\n" : '')) . $child->text;
+                $wbr  = false;
+            }
+        }
+
+        return $text;
+    }
+
     public function classes(): ClassList
     {
         return new ClassList($this->attributes['class'] ?? '');
@@ -301,6 +324,7 @@ class Element
                 ];
             })
             ->filter(fn(?array $element) => $element !== null)
+            ->values()
             ->all();
     }
 
