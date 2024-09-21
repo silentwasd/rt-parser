@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\SearchResource;
 use App\Services\Rt\Enums\SearchDirection;
 use App\Services\Rt\Enums\SearchOrder;
 use App\Services\Rt\RtService;
@@ -25,7 +26,8 @@ class SearchController extends Controller
             'sort_direction' => [
                 'required',
                 Rule::in(['asc', 'desc'])
-            ]
+            ],
+            'page'           => 'nullable|integer|min:1'
         ]);
 
         $order = match ($data['sort_column']) {
@@ -42,12 +44,19 @@ class SearchController extends Controller
             'desc' => SearchDirection::Descending
         };
 
-        return response()->json(
-            $rt->search(
-                query: $data['query'],
-                order: $order,
-                direction: $direction
-            )
+        $data = $rt->search(
+            query: $data['query'],
+            order: $order,
+            direction: $direction,
+            page: $data['page'] ?? 1
         );
+
+        return response()->json([
+            'data' => $data['data'],
+            'meta' => [
+                'per_page' => 50,
+                'total'    => $data['total']
+            ]
+        ]);
     }
 }

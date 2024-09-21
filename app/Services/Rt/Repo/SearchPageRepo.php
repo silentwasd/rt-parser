@@ -55,6 +55,19 @@ class SearchPageRepo extends Repository
             $result[] = $topic;
         }
 
-        return $result;
+        $total = count($result);
+
+        if (
+            ($resultCount = $document->find(new Filter(id: 'page_content'))
+                             ->find(new Filter(class: 'med bold'))->text) &&
+            preg_match('/Результатов поиска: (\d+)/', $resultCount, $matches)
+        ) {
+            $total = (int)$matches[1];
+        }
+
+        return [
+            'data'  => $result,
+            'total' => $total
+        ];
     }
 }
