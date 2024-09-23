@@ -11,4 +11,5 @@ class Topic
     public int $size;
     public int $seeds;
     public int $leeches;
+    public array $images = [];
 }

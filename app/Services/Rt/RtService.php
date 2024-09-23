@@ -4,6 +4,7 @@ namespace App\Services\Rt;
 
 use App\Services\Rt\Objects\SearchTopic;
 use App\Services\Rt\Objects\Topic;
+use App\Services\Rt\Repo\ForumPageRepo;
 use App\Services\Rt\Repo\SearchPageRepo;
 use App\Services\Rt\Enums\SearchCategory;
 use App\Services\Rt\Enums\SearchDirection;
@@ -52,9 +53,29 @@ class RtService
         return SearchPageRepo::topics($body);
     }
 
+    /**
+     * Forum topics.
+     * @throws ConnectionException
+     */
+    public function forumTopics(int $id, int $page = 1): array
+    {
+        $body = Cache::remember(
+            "forum.$id.page.$page", 3600 * 24,
+            fn() => $this->http()->getBody('forum/viewforum.php', [
+                'f'     => $id,
+                'start' => ($page - 1) * 50
+            ])
+        );
+
+        return ForumPageRepo::topics($body);
+    }
+
     public function topic(int $id): Topic
     {
-        $body = $this->http()->getBody('forum/viewtopic.php', ['t' => $id]);
+        $body = Cache::remember(
+            "topic.$id", 3600 * 24,
+            fn () => $this->http()->getBody('forum/viewtopic.php', ['t' => $id])
+        );
 
         return TopicPageRepo::topic($body);
     }

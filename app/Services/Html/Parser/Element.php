@@ -104,6 +104,11 @@ class Element
         return new ClassList($this->attributes['class'] ?? '');
     }
 
+    public function data(): DataList
+    {
+        return new DataList($this->attributes);
+    }
+
     public function toArray(): array
     {
         return collect($this->children)

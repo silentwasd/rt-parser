@@ -3,8 +3,10 @@
 namespace App\Services\Rt;
 
 use App\Services\Http\ProxyService;
+use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\Response;
 
 class HttpClient
 {
@@ -29,5 +31,13 @@ class HttpClient
     public function getBody(string $url, mixed $query = null): string
     {
         return mb_convert_encoding($this->client->get($url, $query)->body(), 'UTF-8', 'Windows-1251');
+    }
+
+    /**
+     * @throws ConnectionException
+     */
+    public function get(string $url, mixed $query = null): PromiseInterface|Response
+    {
+        return $this->client->get($url, $query);
     }
 }
