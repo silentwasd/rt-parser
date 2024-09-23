@@ -32,10 +32,12 @@ class ForumPageRepo extends Repository
         $items = [];
 
         foreach ($document->findAll(new Filter(class: "hl-tr")) as $topicEl) {
+            $authors = $topicEl->findAll(new Filter(class: "topicAuthor"));
+
             $items[] = [
                 "original_id" => (int)$topicEl->data()->get("topic_id"),
                 "name"        => $topicEl->find(new Filter(class: "torTopic bold tt-text"))->text,
-                "author"      => $topicEl->findAll(new Filter(class: "topicAuthor"))[1]->text,
+                "author"      => count($authors) > 1 ? $authors[1]->text : null,
                 "size"        => html_entity_decode(
                     $topicEl->find(new Filter(class: "small f-dl dl-stub"))?->text ?? 0
                 ),
@@ -54,8 +56,8 @@ class ForumPageRepo extends Repository
                                          ->map(function (array $item) {
                                              $topic            = new ForumTopic();
                                              $topic->id        = $item['original_id'];
-                                             $topic->name      = $item['name'];
-                                             $topic->author    = $item['author'];
+                                             $topic->name      = html_entity_decode($item['name']);
+                                             $topic->author    = $item['author'] ? trim(html_entity_decode($item['author'])) : null;
                                              $topic->size      = ForumTopic::parseSize($item['size']);
                                              $topic->seeds     = (int)$item['seeds'];
                                              $topic->leeches   = (int)$item['leeches'];

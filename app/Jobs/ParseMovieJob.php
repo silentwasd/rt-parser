@@ -31,7 +31,7 @@ class ParseMovieJob implements ShouldQueue
                 'seeds'     => $this->topic->seeds,
                 'leeches'   => $this->topic->leeches,
                 'downloads' => $this->topic->downloads,
-                'author_id' => Author::firstOrCreate(['name' => $this->topic->author])->id
+                'author_id' => $this->topic->author ? Author::firstOrCreate(['name' => $this->topic->author])->id : null
             ]
         );
     }

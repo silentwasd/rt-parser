@@ -21,13 +21,15 @@ class ParseForumsCommand extends Command
         $forums = config('services.rt.forums');
 
         foreach ($forums as $forumId => $forumData) {
-            $firstPage = $rt->forumTopics((int)$forumId);
+            for ($i = 1; $i <= 10; $i++) {
+                $firstPage = $rt->forumTopics((int)$forumId, $i);
 
-            $lastPage = $firstPage['lastPage'];
+                $lastPage = $firstPage['lastPage'];
 
-            foreach ($firstPage['items'] as $item) {
-                if ($forumData['type'] == 'movies')
-                    ParseMovieJob::dispatch($item);
+                foreach ($firstPage['items'] as $item) {
+                    if ($forumData['type'] == 'movies')
+                        ParseMovieJob::dispatch($item);
+                }
             }
         }
     }
