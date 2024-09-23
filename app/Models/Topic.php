@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Topic extends Model
 {
     protected $fillable = [
+        'original_id',
         'name',
         'size',
         'seeds',

@@ -10,6 +10,8 @@ return new class extends Migration {
         Schema::create('topics', function (Blueprint $table) {
             $table->id();
 
+            $table->bigInteger('original_id')->unsigned();
+
             $table->string('name');
 
             $table->foreignId('author_id')
