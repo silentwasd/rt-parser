@@ -59,17 +59,23 @@ class RtService
      */
     public function forumTopics(int $id, int $page = 1): array
     {
-        $body = $this->http()->getBody('forum/viewforum.php', [
-            'f'     => $id,
-            'start' => ($page - 1) * 50
-        ]);
+        $body = Cache::remember(
+            "forum.$id.page.$page", 3600 * 24,
+            fn() => $this->http()->getBody('forum/viewforum.php', [
+                'f'     => $id,
+                'start' => ($page - 1) * 50
+            ])
+        );
 
         return ForumPageRepo::topics($body);
     }
 
     public function topic(int $id): Topic
     {
-        $body = $this->http()->getBody('forum/viewtopic.php', ['t' => $id]);
+        $body = Cache::remember(
+            "topic.$id", 3600 * 24,
+            fn () => $this->http()->getBody('forum/viewtopic.php', ['t' => $id])
+        );
 
         return TopicPageRepo::topic($body);
     }

@@ -23,7 +23,8 @@ class TopicPageRepo extends Repository
         $topic->size        = $document->find(new Filter(class: 'tor-size-humn'))->attributes['title'];
         $topic->seeds       = (int)$document->find(new Filter(class: 'seed'))?->find(new Filter(name: 'b'))?->text ?? 0;
         $topic->leeches     = (int)$document->find(new Filter(class: 'leech'))?->find(new Filter(name: 'b'))?->text ?? 0;
-        $topic->comments    = collect($table->findAll(new Filter(name: 'tbody')))
+
+        $topic->comments = collect($table->findAll(new Filter(name: 'tbody')))
             ->filter(fn(Element $element) => $element->find(new Filter(class: 'message td2')) != null)
             ->skip(1)
             ->map(fn(Element $element) => [
@@ -39,6 +40,13 @@ class TopicPageRepo extends Repository
             ])
             ->values()
             ->all();
+
+        $topic->images = collect(
+            $table->find(new Filter(class: 'post_body'))
+                  ->findAll(new Filter(name: 'var'))
+        )->sortBy(fn(Element $element) => !$element->classes()->has('postImgAligned'))
+         ->map(fn(Element $element) => $element->attributes['title'])
+         ->all();
 
         return $topic;
     }
