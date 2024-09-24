@@ -21,10 +21,14 @@ class ParseForumsCommand extends Command
         $forums = config('services.rt.forums');
 
         foreach ($forums as $forumId => $forumData) {
-            for ($i = 1; $i <= 10; $i++) {
+            $firstPage = $rt->forumTopics((int)$forumId, 1);
+
+            $lastPage = $firstPage['lastPage'];
+
+            for ($i = 1; $i <= $lastPage; $i++) {
                 $firstPage = $rt->forumTopics((int)$forumId, $i);
 
-                $lastPage = $firstPage['lastPage'];
+                $this->info('Page ' . $i);
 
                 foreach ($firstPage['items'] as $item) {
                     if ($forumData['type'] == 'movies')

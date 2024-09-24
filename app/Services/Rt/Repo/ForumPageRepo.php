@@ -32,6 +32,9 @@ class ForumPageRepo extends Repository
         $items = [];
 
         foreach ($document->findAll(new Filter(class: "hl-tr")) as $topicEl) {
+            if (!$topicEl->find(new Filter(class: "torTopic bold tt-text")))
+                continue;
+
             $authors = $topicEl->findAll(new Filter(class: "topicAuthor"));
 
             $items[] = [
