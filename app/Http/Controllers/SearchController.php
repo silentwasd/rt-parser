@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\SearchResource;
+use App\Models\Movie;
 use App\Services\Rt\Enums\SearchDirection;
 use App\Services\Rt\Enums\SearchOrder;
 use App\Services\Rt\RtService;
@@ -18,7 +19,7 @@ class SearchController extends Controller
     public function __invoke(Request $request, RtService $rt)
     {
         $data = $request->validate([
-            'query'          => 'required|string|max:255',
+            'query'          => 'nullable|string|max:255',
             'sort_column'    => [
                 'required',
                 Rule::in(['name', 'category', 'size', 'seeds', 'leeches', 'downloads', 'created_at'])
@@ -44,18 +45,25 @@ class SearchController extends Controller
             'desc' => SearchDirection::Descending
         };
 
-        $data = $rt->search(
-            query: $data['query'],
-            order: $order,
-            direction: $direction,
-            page: $data['page'] ?? 1
-        );
+        if ($data['query'] ?? false) {
+            $data = $rt->search(
+                query: $data['query'],
+                order: $order,
+                direction: $direction,
+                page: $data['page'] ?? 1
+            );
+        } else {
+            $data = [];
+        }
 
         return response()->json([
-            'data' => $data['data'],
-            'meta' => [
+            'data'     => $data['data'] ?? [],
+            'meta'     => [
                 'per_page' => 50,
-                'total'    => $data['total']
+                'total'    => $data['total'] ?? 0
+            ],
+            'counters' => [
+                'movies' => Movie::count()
             ]
         ]);
     }
