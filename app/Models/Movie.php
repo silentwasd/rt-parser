@@ -10,7 +10,9 @@ class Movie extends Model
     protected $fillable = [
         'topic_id',
         'title',
-        'second_title'
+        'second_title',
+        'year_from',
+        'year_to'
     ];
 
     public function cover(): BelongsTo

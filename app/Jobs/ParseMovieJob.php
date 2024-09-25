@@ -31,6 +31,14 @@ class ParseMovieJob implements ShouldQueue
     {
     }
 
+    private function extract(string $regex, string $text): ?array
+    {
+        if (!preg_match($regex, $text, $matches))
+            return null;
+
+        return $matches;
+    }
+
     public function handle(RtService $rt): void
     {
         $topicModel = Topic::updateOrCreate(
@@ -49,11 +57,15 @@ class ParseMovieJob implements ShouldQueue
 
         $parts = explode(" / ", $titleMatch[1]);
 
-        $movie = Movie::firstOrCreate(
+        $year = $this->extract("/\[(?<from>\d{4})(-(?<to>\d{4}))?/", $topicModel->name);
+
+        $movie = Movie::updateOrCreate(
             ['topic_id' => $topicModel->id],
             [
                 'title'        => $parts[0],
-                'second_title' => $parts[1] ?? null
+                'second_title' => $parts[1] ?? null,
+                'year_from'    => $year['from'] ?? null,
+                'year_to'      => $year['to'] ?? null
             ]
         );
 
@@ -97,7 +109,8 @@ class ParseMovieJob implements ShouldQueue
                         Storage::disk('public')->put($firstValidImage, $response->body());
 
                         break;
-                    } catch (Exception $e) {}
+                    } catch (Exception $e) {
+                    }
                 }
 
                 $movie->cover_id = $firstValidImage ? File::create(['path' => $firstValidImage])->id : null;

@@ -15,7 +15,11 @@ class MovieResource extends JsonResource
             'id'       => $this->id,
             'topic_id' => $this->topic->original_id,
             'title'    => $this->title,
-            'cover'    => $this->cover?->path
+            'cover'    => $this->cover?->path,
+            'year'     => [
+                'from' => $this->year_from,
+                'to'   => $this->year_to
+            ]
         ];
     }
 }
