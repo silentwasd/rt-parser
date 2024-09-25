@@ -25,7 +25,7 @@ class ParseForumsCommand extends Command
 
             $lastPage = $firstPage['lastPage'];
 
-            for ($i = 1; $i <= $lastPage; $i++) {
+            for ($i = 1; $i <= 100; $i++) {
                 $firstPage = $rt->forumTopics((int)$forumId, $i);
 
                 $this->info('Page ' . $i);

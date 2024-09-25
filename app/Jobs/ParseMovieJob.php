@@ -2,8 +2,10 @@
 
 namespace App\Jobs;
 
+use App\Enums\GenreType;
 use App\Models\Author;
 use App\Models\File;
+use App\Models\Genre;
 use App\Models\Movie;
 use App\Models\Topic;
 use App\Services\Rt\Objects\ForumTopic;
@@ -39,6 +41,14 @@ class ParseMovieJob implements ShouldQueue
         return $matches;
     }
 
+    public function extractAll(string $regex, string $text): ?array
+    {
+        if (!preg_match_all($regex, $text, $matches))
+            return null;
+
+        return $matches;
+    }
+
     public function handle(RtService $rt): void
     {
         $topicModel = Topic::updateOrCreate(
@@ -59,6 +69,34 @@ class ParseMovieJob implements ShouldQueue
 
         $year = $this->extract("/\[(?<from>\d{4})(-(?<to>\d{4}))?/", $topicModel->name);
 
+        $genre = $this->extractAll("/\W(романтическая комедия|музыкальная комедия|музыкальная мелодрама|мелодрама|боевик|немое кино|комедия|драма|история|ужасы|триллер|детектив|приключения|экранизация|вестерн|исторический|военный|фантастика|антиутопия|криминал|сказка|мюзикл|фэнтези|семейный|comedy|drama|притча|биография|мистика|афёра|историко-приключенческий|детский музыкальный фильм|action|biography|history|war|рок-опера|фильм-нуар|военно-приключенческий|сатира|трагикомедия|музыкальный фильм|комедии|романс|эротика|шпионский триллер|шпионский|катастрофа|фильм нуар|нуар|трагедия|детективная пародия)+\W/iu", $topicModel->name);
+
+        $genres = collect($genre[1])
+            ->map(fn($genre) => Str::lower($genre))
+            ->map(fn($genre) => match ($genre) {
+                'comedy', 'комедии'         => 'комедия',
+                'drama'                     => 'драма',
+                'action'                    => 'боевик',
+                'biography'                 => 'биография',
+                'history', 'исторический'   => 'история',
+                'war'                       => 'военный',
+                'фильм-нуар', 'фильм нуар'  => 'нуар',
+                'романтическая комедия'     => ['романтика', 'комедия'],
+                'музыкальная комедия'       => ['мюзикл', 'комедия'],
+                'музыкальная мелодрама'     => ['мюзикл', 'мелодрама'],
+                'историко-приключенческий'  => ['история', 'приключения'],
+                'детективная пародия'       => ['детектив', 'пародия'],
+                'музыкальный фильм'         => 'мюзикл',
+                'шпионский триллер'         => ['шпионский', 'триллер'],
+                'детский музыкальный фильм' => ['детский', 'мюзикл'],
+                'романс'                    => 'романтика',
+                default                     => $genre
+            })
+            ->flatten()
+            ->unique()
+            ->map(fn($genre) => Genre::firstOrCreate(['name' => $genre, 'genre_type' => GenreType::Movie]))
+            ->map(fn(Genre $genre) => $genre->id);
+
         $movie = Movie::updateOrCreate(
             ['topic_id' => $topicModel->id],
             [
@@ -69,7 +107,9 @@ class ParseMovieJob implements ShouldQueue
             ]
         );
 
-        if ($movie->wasRecentlyCreated) {
+        $movie->genres()->sync($genres);
+
+        if (false) {
             try {
 
                 $rtTopic = $rt->topic($topicModel->original_id);

@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\GenreType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Movie extends Model
 {
@@ -23,5 +25,11 @@ class Movie extends Model
     public function topic(): BelongsTo
     {
         return $this->belongsTo(Topic::class);
+    }
+
+    public function genres(): BelongsToMany
+    {
+        return $this->belongsToMany(Genre::class)
+                    ->where('genre_type', GenreType::Movie);
     }
 }

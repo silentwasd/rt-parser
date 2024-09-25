@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Genre;
 use App\Models\Movie;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -19,7 +20,8 @@ class MovieResource extends JsonResource
             'year'     => [
                 'from' => $this->year_from,
                 'to'   => $this->year_to
-            ]
+            ],
+            'genres'   => $this->genres->map(fn(Genre $genre) => $genre->name)->take(3)
         ];
     }
 }
