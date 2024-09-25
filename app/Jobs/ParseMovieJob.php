@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Enums\GenreType;
 use App\Models\Author;
+use App\Models\Country;
 use App\Models\File;
 use App\Models\Genre;
 use App\Models\Movie;
@@ -71,7 +72,7 @@ class ParseMovieJob implements ShouldQueue
 
         $genre = $this->extractAll("/\W(романтическая комедия|музыкальная комедия|музыкальная мелодрама|мелодрама|боевик|немое кино|комедия|драма|история|ужасы|триллер|детектив|приключения|экранизация|вестерн|исторический|военный|фантастика|антиутопия|криминал|сказка|мюзикл|фэнтези|семейный|comedy|drama|притча|биография|мистика|афёра|историко-приключенческий|детский музыкальный фильм|action|biography|history|war|рок-опера|фильм-нуар|военно-приключенческий|сатира|трагикомедия|музыкальный фильм|комедии|романс|эротика|шпионский триллер|шпионский|катастрофа|фильм нуар|нуар|трагедия|детективная пародия)+\W/iu", $topicModel->name);
 
-        $genres = collect($genre[1])
+        $genres = collect($genre[1] ?? [])
             ->map(fn($genre) => Str::lower($genre))
             ->map(fn($genre) => match ($genre) {
                 'comedy', 'комедии'         => 'комедия',
@@ -98,6 +99,22 @@ class ParseMovieJob implements ShouldQueue
             ->map(fn($genre) => Genre::firstOrCreate(['name' => $genre, 'genre_type' => GenreType::Movie]))
             ->map(fn(Genre $genre) => $genre->id);
 
+        $country = $this->extractAll("/(западная германия|австрия|фрг|сша|франция|италия|германия|великобритания|бразилия|канада|испания|югославия|польша|мексика|чехословакия|ссср|израиль|швейцария|вел.бр|австралия|швеция|гдр|япония|нидерланды|дания|венгрия|болгария|финляндия|аргентина|алжир|греция|чехия|египет|румыния)+/iu", $topicModel->name);
+
+        $countries = collect($country[1] ?? [])
+            ->map(fn($country) => Str::lower($country))
+            ->map(fn($country) => match ($country) {
+                'западная германия', 'фрг', 'гдр' => 'германия',
+                'вел.бр'                          => 'великобритания',
+                'сша'                             => 'США',
+                'ссср'                            => 'СССР',
+                default                           => $country
+            })
+            ->flatten()
+            ->unique()
+            ->map(fn($country) => Country::firstOrCreate(['name' => Str::ucfirst($country)]))
+            ->map(fn(Country $country) => $country->id);
+
         $movie = Movie::updateOrCreate(
             ['topic_id' => $topicModel->id],
             [
@@ -109,6 +126,7 @@ class ParseMovieJob implements ShouldQueue
         );
 
         $movie->genres()->sync($genres);
+        $movie->countries()->sync($countries);
 
         if (false) {
             try {

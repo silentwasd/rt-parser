@@ -32,4 +32,9 @@ class Movie extends Model
         return $this->belongsToMany(Genre::class)
                     ->where('genre_type', GenreType::Movie);
     }
+
+    public function countries(): BelongsToMany
+    {
+        return $this->belongsToMany(Country::class);
+    }
 }
