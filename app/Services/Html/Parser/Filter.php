@@ -7,8 +7,9 @@ class Filter
     public ?string $name = null;
     public array $attributes = [];
     public array $classes = [];
+    public ?string $text = null;
 
-    public function __construct(?string $name = null, array $attributes = [], ?string $class = null, ?string $id = null, array $classes = [])
+    public function __construct(?string $name = null, array $attributes = [], ?string $class = null, ?string $id = null, array $classes = [], ?string $text = null)
     {
         $this->name = $name;
 
@@ -19,6 +20,8 @@ class Filter
         ];
 
         $this->classes = $classes;
+
+        $this->text = $text;
     }
 
     public function equals(Element $element): bool
@@ -41,6 +44,13 @@ class Filter
                     $classes->intersect($this->classes)->count() == count($this->classes)
                 ) ||
                 count($this->classes) == 0
+            ) &&
+            (
+                (
+                    $this->text != null &&
+                    $this->text == $element->text
+                ) ||
+                $this->text == null
             );
     }
 }

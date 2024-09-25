@@ -8,6 +8,7 @@ use App\Models\Movie;
 use App\Models\Topic;
 use App\Services\Rt\Objects\ForumTopic;
 use App\Services\Rt\RtService;
+use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -57,50 +58,53 @@ class ParseMovieJob implements ShouldQueue
         );
 
         if ($movie->wasRecentlyCreated) {
-            $rtTopic = $rt->topic($topicModel->original_id);
+            try {
 
-            $firstValidImage = null;
+                $rtTopic = $rt->topic($topicModel->original_id);
 
-            foreach ($rtTopic->images as $image) {
-                if (Str::startsWith($image, [
-                    'https://static.rutracker.cc',
-                    'http://st.kinopoisk.ru',
-                    'http://www.kinopoisk.ru',
-                    'http://imageban.ru'
-                ]))
-                    continue;
+                $firstValidImage = null;
 
-                try {
-                    $response = Http::get($image);
-
-                    if (!$response->ok() || count(array_intersect(['image/png', 'image/jpeg'], $response->getHeader('Content-Type'))) == 0)
+                foreach ($rtTopic->images as $image) {
+                    if (Str::startsWith($image, [
+                        'https://static.rutracker.cc',
+                        'http://st.kinopoisk.ru',
+                        'http://www.kinopoisk.ru',
+                        'http://imageban.ru'
+                    ]))
                         continue;
 
-                    if ($response->transferStats
-                            ->getRequest()
-                            ->getUri()
-                            ->getPath() == '/thumb_clickview.png')
-                        continue;
+                    try {
+                        $response = Http::get($image);
 
-                    $ext = '';
+                        if (!$response->ok() || count(array_intersect(['image/png', 'image/jpeg'], $response->getHeader('Content-Type'))) == 0)
+                            continue;
 
-                    if ($response->getHeader('Content-Type')[0] == 'image/png')
-                        $ext = 'png';
+                        if ($response->transferStats
+                                ->getRequest()
+                                ->getUri()
+                                ->getPath() == '/thumb_clickview.png')
+                            continue;
 
-                    if ($response->getHeader('Content-Type')[0] == 'image/jpeg')
-                        $ext = 'jpg';
+                        $ext = '';
 
-                    $firstValidImage = 'covers/' . Str::uuid() . '.' . $ext;
-                    Storage::disk('public')->put($firstValidImage, $response->body());
+                        if ($response->getHeader('Content-Type')[0] == 'image/png')
+                            $ext = 'png';
 
-                    break;
-                } catch (\Exception $e) {
+                        if ($response->getHeader('Content-Type')[0] == 'image/jpeg')
+                            $ext = 'jpg';
 
+                        $firstValidImage = 'covers/' . Str::uuid() . '.' . $ext;
+                        Storage::disk('public')->put($firstValidImage, $response->body());
+
+                        break;
+                    } catch (Exception $e) {}
                 }
-            }
 
-            $movie->cover_id = $firstValidImage ? File::create(['path' => $firstValidImage])->id : null;
-            $movie->save();
+                $movie->cover_id = $firstValidImage ? File::create(['path' => $firstValidImage])->id : null;
+                $movie->save();
+            } catch (Exception $e) {
+                $this->fail($e);
+            }
         }
     }
 }

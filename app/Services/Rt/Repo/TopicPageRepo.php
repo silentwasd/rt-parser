@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 
 class TopicPageRepo extends Repository
 {
-    public static function topic(string $body): Topic
+    public static function topic(string $body): ?Topic
     {
         $document = static::parser()->parse($body);
 
@@ -17,10 +17,13 @@ class TopicPageRepo extends Repository
 
         $topic = new Topic();
 
-        $topic->title       = $document->find(new Filter(class: 'topic-title'))->niceText();
-        $topic->magnet      = $document->find(new Filter(class: 'med magnet-link'))->attributes['href'];
-        $topic->description = $table->find(new Filter(class: 'post_body'))->toArray();
-        $topic->size        = $document->find(new Filter(class: 'tor-size-humn'))->attributes['title'];
+        if (!($title = $document->find(new Filter(class: 'topic-title'))?->niceText()))
+            return null;
+
+        $topic->title = $title;
+        $topic->magnet      = $document->find(new Filter(class: 'med magnet-link'))?->attributes['href'];
+        $topic->description = $table->find(new Filter(class: 'post_body'))?->toArray();
+        $topic->size        = $document->find(new Filter(class: 'tor-size-humn'))?->attributes['title'];
         $topic->seeds       = (int)$document->find(new Filter(class: 'seed'))?->find(new Filter(name: 'b'))?->text ?? 0;
         $topic->leeches     = (int)$document->find(new Filter(class: 'leech'))?->find(new Filter(name: 'b'))?->text ?? 0;
 

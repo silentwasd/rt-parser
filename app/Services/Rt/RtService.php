@@ -11,6 +11,7 @@ use App\Services\Rt\Enums\SearchDirection;
 use App\Services\Rt\Enums\SearchOrder;
 use App\Services\Rt\Enums\SearchPeriod;
 use App\Services\Rt\Repo\TopicPageRepo;
+use Exception;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Cache;
 
@@ -55,7 +56,6 @@ class RtService
 
     /**
      * Forum topics.
-     * @throws ConnectionException
      */
     public function forumTopics(int $id, int $page = 1): array
     {
@@ -70,6 +70,9 @@ class RtService
         return ForumPageRepo::topics($body);
     }
 
+    /**
+     * @throws Exception
+     */
     public function topic(int $id): Topic
     {
         $body = Cache::remember(
@@ -77,6 +80,9 @@ class RtService
             fn () => $this->http()->getBody('forum/viewtopic.php', ['t' => $id])
         );
 
-        return TopicPageRepo::topic($body);
+        if (!($topic = TopicPageRepo::topic($body)))
+            throw new Exception('Invalid topic');
+
+        return $topic;
     }
 }

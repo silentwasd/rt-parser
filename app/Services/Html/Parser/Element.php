@@ -18,6 +18,50 @@ class Element
         $this->id = $id;
     }
 
+    public function parent(Element $root): ?Element
+    {
+        foreach ($root->children as $child) {
+            if ($child->id == $this->id)
+                return $root;
+        }
+
+        foreach ($root->children as $child) {
+            if ($result = $this->parent($child))
+                return $result;
+        }
+
+        return null;
+    }
+
+    public function next(Element $parent): ?Element
+    {
+        $next = false;
+
+        foreach ($parent->children as $child) {
+            if ($next)
+                return $child;
+
+            if ($child->id == $this->id)
+                $next = true;
+        }
+
+        return null;
+    }
+
+    public function findNext(Element $parent, callable $func): ?Element
+    {
+        $el = $this;
+
+        while ($el = $el->next($parent)) {
+            if (!$func($el))
+                continue;
+
+            return $el;
+        }
+
+        return null;
+    }
+
     public function find(Filter $filter, bool $recursive = true): ?Element
     {
         foreach ($this->children as $child) {

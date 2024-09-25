@@ -48,7 +48,7 @@ class ForumPageRepo extends Repository
                 "leeches"     => $topicEl->find(new Filter(class: "leechmed"))?->deepText(),
                 "downloads"   => $topicEl
                     ->find(
-                        new Filter(class: "med", attributes: ["title" => "Торрент скачан"])
+                        new Filter(attributes: ["title" => "Торрент скачан"], class: "med")
                     )
                     ?->find(new Filter(name: "b"))?->text
             ];
