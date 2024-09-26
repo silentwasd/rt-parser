@@ -28,7 +28,7 @@ class MovieController extends Controller
                  ->whereColumn("movies.topic_id", "topics.id")
                  ->orderByDesc("topics.downloads")
                  ->take(1)
-        );
+        )->orderBy('id');
 
         return MovieResource::collection(
             $movies->paginate(perPage: 50)
