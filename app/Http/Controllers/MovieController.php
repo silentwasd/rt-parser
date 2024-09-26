@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\MovieResource;
 use App\Models\Movie;
+use App\Models\Topic;
 use Illuminate\Http\Request;
 
 class MovieController extends Controller
@@ -21,6 +22,13 @@ class MovieController extends Controller
             $movies->where('title', 'LIKE', "%{$data['query']}%")
                    ->orWhere('second_title', 'LIKE', "%{$data['query']}%");
         }
+
+        $movies->orderByDesc(
+            Topic::selectRaw("topics.downloads")
+                 ->whereColumn("movies.topic_id", "topics.id")
+                 ->orderByDesc("topics.downloads")
+                 ->take(1)
+        );
 
         return MovieResource::collection(
             $movies->paginate(perPage: 50)
