@@ -15,7 +15,8 @@ class Movie extends Model
         'second_title',
         'year_from',
         'year_to',
-        'release_id'
+        'release_id',
+        'forum_id'
     ];
 
     public function cover(): BelongsTo

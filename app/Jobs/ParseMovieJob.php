@@ -31,7 +31,8 @@ class ParseMovieJob implements ShouldQueue
     public int $timeout = 30;
 
     public function __construct(
-        public ForumTopic $topic
+        public ForumTopic $topic,
+        public int        $forumId
     )
     {
     }
@@ -156,7 +157,8 @@ class ParseMovieJob implements ShouldQueue
                 'second_title' => $parts[1] ?? null,
                 'year_from'    => $year['from'] ?? null,
                 'year_to'      => $year['to'] ?? null,
-                'release_id'   => $releaseModel?->id
+                'release_id'   => $releaseModel?->id,
+                'forum_id'     => $this->forumId
             ]
         );
 
