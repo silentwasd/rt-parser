@@ -155,15 +155,15 @@ class ParseMovieJob implements ShouldQueue
                 'title'        => $parts[0],
                 'second_title' => $parts[1] ?? null,
                 'year_from'    => $year['from'] ?? null,
-                'year_to'      => $year['to'] ?? null
+                'year_to'      => $year['to'] ?? null,
+                'release_id'   => $releaseModel?->id
             ]
         );
 
         $movie->genres()->sync($genres);
         $movie->countries()->sync($countries);
-        $movie->update(['release_id' => $releaseModel?->id]);
 
-        if (false) {
+        if ($movie->wasRecentlyCreated) {
             try {
 
                 $rtTopic = $rt->topic($topicModel->original_id);
