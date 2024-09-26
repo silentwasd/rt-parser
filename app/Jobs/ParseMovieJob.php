@@ -3,11 +3,13 @@
 namespace App\Jobs;
 
 use App\Enums\GenreType;
+use App\Enums\ReleaseType;
 use App\Models\Author;
 use App\Models\Country;
 use App\Models\File;
 use App\Models\Genre;
 use App\Models\Movie;
+use App\Models\Release;
 use App\Models\Topic;
 use App\Services\Rt\Objects\ForumTopic;
 use App\Services\Rt\RtService;
@@ -115,6 +117,38 @@ class ParseMovieJob implements ShouldQueue
             ->map(fn($country) => Country::firstOrCreate(['name' => Str::ucfirst($country)]))
             ->map(fn(Country $country) => $country->id);
 
+        $release = $this->extract("/(dvd-avc|dvd5|dvdrip-avc|dvdrip|bdrip-avc|bdrip avc|vhsrip|hdrip-avc|hdrip|bdrip|web-dlrip-avc|web-dlvrip-avc|web-dlrip|tvrip-avc|tvrip|webrip|screener|satrip|dvb|dvdremux|ldrip|telesync|telecine|betacamrip)+/iu", $topicModel->name);
+
+        $releaseName = match (Str::lower($release[1] ?? '')) {
+            'dvd-avc'                => 'DVD-AVC',
+            'dvd5'                   => 'DVD5',
+            'dvdrip-avc'             => 'DVDRip-AVC',
+            'dvdrip'                 => 'DVDRip',
+            'bdrip avc', 'bdrip-avc' => 'BDRip-AVC',
+            'vhsrip'                 => 'VHSRip',
+            'hdrip-avc'              => 'HDRip-AVC',
+            'hdrip'                  => 'HDRip',
+            'bdrip'                  => 'BDRip',
+            'web-dlrip-avc'          => 'WEB-DLRip-AVC',
+            'web-dlvrip-avc'         => 'WEB-DLVRip-AVC',
+            'web-dlrip'              => 'WEB-DLRip',
+            'tvrip-avc'              => 'TVRip-AVC',
+            'tvrip'                  => 'TVRip',
+            'webrip'                 => 'WEBRip',
+            'satrip'                 => 'SATRip',
+            'dvb'                    => 'DVB',
+            'dvdremux'               => 'DVDRemux',
+            'ldrip'                  => 'LDRip',
+            'betacamrip'             => 'BetacamRip',
+            'telecine'               => 'Telecine',
+            'telesync'               => 'Telesync',
+            default                  => Str::ucfirst($release[1] ?? '')
+        };
+
+        $releaseModel = $releaseName
+            ? Release::firstOrCreate(['name' => $releaseName, 'release_type' => ReleaseType::Movie])
+            : null;
+
         $movie = Movie::updateOrCreate(
             ['topic_id' => $topicModel->id],
             [
@@ -127,6 +161,7 @@ class ParseMovieJob implements ShouldQueue
 
         $movie->genres()->sync($genres);
         $movie->countries()->sync($countries);
+        $movie->update(['release_id' => $releaseModel?->id]);
 
         if (false) {
             try {

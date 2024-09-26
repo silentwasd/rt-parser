@@ -14,7 +14,8 @@ class Movie extends Model
         'title',
         'second_title',
         'year_from',
-        'year_to'
+        'year_to',
+        'release_id'
     ];
 
     public function cover(): BelongsTo
@@ -36,5 +37,10 @@ class Movie extends Model
     public function countries(): BelongsToMany
     {
         return $this->belongsToMany(Country::class);
+    }
+
+    public function release(): BelongsTo
+    {
+        return $this->belongsTo(Release::class);
     }
 }

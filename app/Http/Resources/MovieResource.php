@@ -23,7 +23,8 @@ class MovieResource extends JsonResource
                 'to'   => $this->year_to
             ],
             'genres'    => $this->genres->map(fn(Genre $genre) => $genre->name)->take(1),
-            'countries' => $this->countries->map(fn(Country $country) => $country->name)->take(1)
+            'countries' => $this->countries->map(fn(Country $country) => $country->name)->take(1),
+            'release'   => $this->release?->name
         ];
     }
 }
