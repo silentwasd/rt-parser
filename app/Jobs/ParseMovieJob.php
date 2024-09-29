@@ -78,10 +78,12 @@ class ParseMovieJob implements ShouldQueue
         $year = $this->extract("/\[(?<from>\d{4})(-(?<to>\d{4}))?/", $topicModel->name);
 
         $availableGenres = [
+            "документально-игровая реконструкция",
             "историко-биографический фильм",
             "криминальная трагикомедия",
             "детский музыкальный фильм",
             "историко-приключенческий",
+            "антиклерикальный памфлет",
             "триллер ужасы \/ мистика",
             "историко-эпический фильм",
             "художественный кинофильм",
@@ -91,12 +93,14 @@ class ParseMovieJob implements ShouldQueue
             "романтическая комедия",
             "музыкальная мелодрама",
             "фантастический комикс",
+            "художественный фильм",
             "боевик\/приключения",
             "музыкальная комедия",
             "комедийные новеллы",
             "ужасы\/фантастика",
             "эротический триллер",
             "мистическая драма",
+            "молодежная драмедия",
             "историко-библейский",
             "детективная пародия",
             "гангстерская сага",
@@ -112,6 +116,8 @@ class ParseMovieJob implements ShouldQueue
             "документальный",
             "биографический",
             "романтический",
+            "триллер,ужасы",
+            "драма,триллер",
             "зомби-экшн",
             "фильм-нуар",
             "фильм нуар",
@@ -126,9 +132,11 @@ class ParseMovieJob implements ShouldQueue
             "комедия",
             "драма",
             "история",
+            "пародия",
             "ужасы",
             "триллер",
             "детектив",
+            "драмеди",
             "приключения",
             "экранизация",
             "вестерн",
@@ -218,11 +226,14 @@ class ParseMovieJob implements ShouldQueue
                 'зомби-экшн'                                => ['зомби', 'боевик'],
                 'художественный кинофильм'                  => 'художественный',
                 'историко-эпический фильм'                  => ['история', 'эпический'],
-                'триллер ужасы / мистика'                  => ['триллер', 'ужасы', 'мистика'],
+                'триллер ужасы / мистика'                   => ['триллер', 'ужасы', 'мистика'],
                 'криминальная трагикомедия'                 => ['криминал', 'трагикомедия'],
                 'комедия мелодрама'                         => ['комедия', 'мелодрама'],
                 'фантастический комикс'                     => ['фантастика', 'комикс'],
-                'ужасы/фантастика'                         => ['ужасы', 'фантастика'],
+                'ужасы/фантастика'                          => ['ужасы', 'фантастика'],
+                'триллер,ужасы'                             => ['триллер', 'ужасы'],
+                'драма,триллер'                             => ['триллер', 'драма'],
+                'документально-игровая реконструкция'       => ['документальный', 'игровой', 'реконструкция'],
                 default                                     => $genre
             })
             ->flatten()
@@ -284,7 +295,13 @@ class ParseMovieJob implements ShouldQueue
             "хорватия",
             "бельгия",
             "армения",
-            "словения"
+            "словения",
+            "венесуэла",
+            "куба",
+            "уругвай",
+            "коста-рика",
+            "боливия",
+            "ливан"
         ];
 
         $country = $this->extractAll("/(" . implode("|", $availableCountries) . ")+/iu", $topicModel->name);
@@ -299,6 +316,7 @@ class ParseMovieJob implements ShouldQueue
                 'юар'                             => 'ЮАР',
                 'исламская республика иран'       => 'иран',
                 'новая зеландия'                  => 'Новая Зеландия',
+                'коста-рика'                      => 'Коста-Рика',
                 default                           => $country
             })
             ->flatten()
@@ -323,10 +341,13 @@ class ParseMovieJob implements ShouldQueue
             "web-dl-avc",
             "web-dl",
             "webrip",
+            "bdrip-avc, 720p",
+            "bdrip-avc hi10p",
             "bdrip-avc",
             "bdrip avc",
             "bdrip 720p",
             "bdrip",
+            "bdrp",
             "vhsrip-avc",
             "vhsrip",
             "hdrip-avc",
@@ -335,6 +356,7 @@ class ParseMovieJob implements ShouldQueue
             "hdtvrip-avc",
             "hdtvrip",
             "hdtv 1080i",
+            "hdtv 1080p",
             "tvrip-avc",
             "tvrip",
             "satrip",
@@ -350,7 +372,8 @@ class ParseMovieJob implements ShouldQueue
             "d-theater-avc",
             "d-theaterrip",
             "dtheaterrip",
-            "vhs -> dvd"
+            "vhs -> dvd",
+            "workprint"
         ];
 
         $release = $this->extract("/(" . implode("|", $availableReleases) . ")+/iu", $topicModel->name);
@@ -364,16 +387,19 @@ class ParseMovieJob implements ShouldQueue
             'dvdrip-avc'                  => 'DVDRip-AVC',
             'dvdrip'                      => 'DVDRip',
             'dvd'                         => 'DVD',
+            'bdrip-avc hi10p'             => 'BDRip-AVC Hi10p',
+            'bdrip-avc, 720p'             => 'BDRip-AVC 720p',
             'bdrip avc', 'bdrip-avc'      => 'BDRip-AVC',
-            'bdrip 720p'                  => 'BDRip 720p',
+            'bdrip 720p',                 => 'BDRip 720p',
             'vhsrip-avc'                  => 'VHSRip-AVC',
             'vhsrip'                      => 'VHSRip',
             'hdrip-avc', 'hdrip - avc'    => 'HDRip-AVC',
             'hdrip'                       => 'HDRip',
             'hdtv 1080i'                  => 'HDTV 1080i',
+            'hdtv 1080p'                  => 'HDTV 1080p',
             'hdtvrip-avc'                 => 'HDTVRip-AVC',
             'hdtvrip'                     => 'HDTVRip',
-            'bdrip'                       => 'BDRip',
+            'bdrip', 'bdrp'               => 'BDRip',
             'web-dlrip-avc'               => 'WEB-DLRip-AVC',
             'web-dlvrip-avc'              => 'WEB-DLVRip-AVC',
             'web-dlrip'                   => 'WEB-DLRip',
