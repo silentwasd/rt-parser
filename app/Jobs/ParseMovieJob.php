@@ -118,6 +118,7 @@ class ParseMovieJob implements ShouldQueue
             "романтический",
             "триллер,ужасы",
             "драма,триллер",
+            "фильм ужасов",
             "зомби-экшн",
             "фильм-нуар",
             "фильм нуар",
@@ -137,6 +138,7 @@ class ParseMovieJob implements ShouldQueue
             "триллер",
             "детектив",
             "драмеди",
+            "драмедия",
             "приключения",
             "экранизация",
             "вестерн",
@@ -219,7 +221,7 @@ class ParseMovieJob implements ShouldQueue
                 'военная драма'                             => ['военный', 'драма'],
                 'приключение', 'приключенческий'            => 'приключения',
                 'fantasy'                                   => 'фэнтези',
-                'ужас'                                      => 'ужасы',
+                'ужас', 'фильм ужасов'                      => 'ужасы',
                 'эротический триллер'                       => ['эротика', 'триллер'],
                 'мистическая драма'                         => ['мистика', 'драма'],
                 'sci-fi'                                    => 'научная фантастика',
@@ -234,6 +236,7 @@ class ParseMovieJob implements ShouldQueue
                 'триллер,ужасы'                             => ['триллер', 'ужасы'],
                 'драма,триллер'                             => ['триллер', 'драма'],
                 'документально-игровая реконструкция'       => ['документальный', 'игровой', 'реконструкция'],
+                'драмедия'                                  => 'драмеди',
                 default                                     => $genre
             })
             ->flatten()
@@ -301,7 +304,10 @@ class ParseMovieJob implements ShouldQueue
             "уругвай",
             "коста-рика",
             "боливия",
-            "ливан"
+            "ливан",
+            "колумбия",
+            "мальта",
+            "чили"
         ];
 
         $country = $this->extractAll("/(" . implode("|", $availableCountries) . ")+/iu", $topicModel->name);
@@ -353,6 +359,7 @@ class ParseMovieJob implements ShouldQueue
             "hdrip-avc",
             "hdrip - avc",
             "hdrip",
+            "hddrip",
             "hdtvrip-avc",
             "hdtvrip",
             "hdtv 1080i",
@@ -394,7 +401,7 @@ class ParseMovieJob implements ShouldQueue
             'vhsrip-avc'                  => 'VHSRip-AVC',
             'vhsrip'                      => 'VHSRip',
             'hdrip-avc', 'hdrip - avc'    => 'HDRip-AVC',
-            'hdrip'                       => 'HDRip',
+            'hdrip', 'hddrip'             => 'HDRip',
             'hdtv 1080i'                  => 'HDTV 1080i',
             'hdtv 1080p'                  => 'HDTV 1080p',
             'hdtvrip-avc'                 => 'HDTVRip-AVC',
