@@ -20,12 +20,19 @@ class TopicPageRepo extends Repository
         if (!($title = $document->find(new Filter(class: 'topic-title'))?->niceText()))
             return null;
 
-        $topic->title = $title;
+        $topic->title       = $title;
         $topic->magnet      = $document->find(new Filter(class: 'med magnet-link'))?->attributes['href'];
         $topic->description = $table->find(new Filter(class: 'post_body'))?->toArray();
         $topic->size        = $document->find(new Filter(class: 'tor-size-humn'))?->attributes['title'];
         $topic->seeds       = (int)$document->find(new Filter(class: 'seed'))?->find(new Filter(name: 'b'))?->text ?? 0;
         $topic->leeches     = (int)$document->find(new Filter(class: 'leech'))?->find(new Filter(name: 'b'))?->text ?? 0;
+
+        $replaceAvatar = function ($url) {
+            if ($url === null)
+                return null;
+
+            return Str::replace('https://static.rutracker.cc/avatars', config('app.url') . '/avatars', $url);
+        };
 
         $topic->comments = collect($table->findAll(new Filter(name: 'tbody')))
             ->filter(fn(Element $element) => $element->find(new Filter(class: 'message td2')) != null)
@@ -35,9 +42,11 @@ class TopicPageRepo extends Repository
                     Str::replace("\n", '', $element->find(new Filter(classes: ['nick']))?->find(new Filter(name: 'a'))?->deepText() ?? '')
                 ),
 
-                'avatar' => $element->find(new Filter(classes: ['poster_info']))
-                                    ->find(new Filter(class: 'avatar'))
-                                    ?->find(new Filter(name: 'img'))?->attributes['src'] ?? null,
+                'avatar' => $replaceAvatar(
+                    $element->find(new Filter(classes: ['poster_info']))
+                            ->find(new Filter(class: 'avatar'))
+                            ?->find(new Filter(name: 'img'))?->attributes['src'] ?? null
+                ),
 
                 'content' => $element->find(new Filter(class: 'post_body'))->toArray()
             ])
